@@ -19,6 +19,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 8,
+        select: false,
+    },
     avatar: {
       type: String,
       default: "",
@@ -29,7 +31,7 @@ const userSchema = new mongoose.Schema({
       enum: ["user", "admin"],
       default: "user",
     },
-  }},
+  },
   {
     timestamps: true,
   }
