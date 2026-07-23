@@ -1,4 +1,6 @@
-const User = require("../models/user.model");
+const User   = require("../models/user.model");
+const bcrypt = require('bcrypt');
+const jwt    = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
     try {
@@ -12,16 +14,31 @@ exports.register = async (req, res) => {
                 message: "Email already exists"
             });
         }
+        const hashpassword = await bcrypt.hash(password,10);
 
-        return res.status(200).json({
+        const newUser = await User.create({
+            name,
+            email,
+            password: hashpassword
+        })
+
+        const token = jwt.sign(
+            {
+                id: newUser._id}
+                ,process.env.JWT_SECRET,
+                {expiresIn: process.env.JWT_EXPIRES_IN}
+    )
+
+        return res.status(201).json({
             success: true,
-            message: "Registration request accepted",
-        }).on('finish', () => { 
-
-            console.log(req.body);
-        });
-
-        
+            message: "User registered successfully",
+            data: {
+                id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+                token
+            }
+        })        
 
     } catch (error) {
         console.error("Register error:", error);
