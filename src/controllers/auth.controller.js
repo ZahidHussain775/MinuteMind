@@ -104,5 +104,8 @@ exports.logout = (req, res) => {
 };
 
 exports.getMe = (req, res) => {
-    res.send('Current User');
+    res.status(200).json({
+        success: true,
+        data: req.user
+    });
 };
