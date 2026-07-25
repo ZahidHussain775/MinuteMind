@@ -31,11 +31,5 @@ router.get(
     auth.getMe
 );
 
-router.post(
-    '/upload', 
-    protect, 
-    upload.single('video'), 
-    auth.uploadMeeting
-);
 
 module.exports = router;
