@@ -4,20 +4,38 @@ const auth = require('../controllers/auth.controller');
 const  validate  = require('../middleware/validation.middleware');
 const { registerSchema, loginSchema } = require('../validators/auth.validators');
 const protect = require('../middleware/auth.midleware');
+const upload = require('../middleware/upload.middleware');
 
 
 router.post(
     '/register', 
     validate(registerSchema), 
-    auth.register);
+    auth.register
+);
     
 router.post(
     '/login',
     validate(loginSchema), 
-    auth.login);
+    auth.login
+);
 
-router.post('/logout', auth.logout); 
+router.post(
+    '/logout', 
+    protect, 
+    auth.logout
+);
 
-router.get('/me', protect, auth.getMe);
+router.get(
+    '/me', 
+    protect, 
+    auth.getMe
+);
+
+router.post(
+    '/upload', 
+    protect, 
+    upload.single('video'), 
+    auth.uploadMeeting
+);
 
 module.exports = router;

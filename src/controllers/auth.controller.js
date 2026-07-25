@@ -1,7 +1,10 @@
 const User   = require("../models/user.model");
 const bcrypt = require('bcrypt');
 const jwt    = require('jsonwebtoken');
-
+const cloudinary = require("../config/cloudinary");
+const Meeting = require("../models/meeting.model");
+ const fs = require("fs");
+ 
 exports.register = async (req, res) => {
     try {
         const { name, email, password } = req.body; // already validated + normalized by Zod middleware
@@ -100,7 +103,10 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
-    res.send('Logout User');
+    res.status(200).json({
+        success: true,
+        message: "Logged out successfully."
+    });
 };
 
 exports.getMe = (req, res) => {
@@ -108,4 +114,45 @@ exports.getMe = (req, res) => {
         success: true,
         data: req.user
     });
+};
+exports.uploadMeeting = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "No audio file uploaded"
+            });
+        }
+
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            resource_type: "video",
+            folder: "minutemind"
+        });
+
+        const meeting = await Meeting.create({
+            owner: req.user._id,
+            audioUrl: result.secure_url,
+            title: req.body.title || "Untitled Meeting",
+            status: "uploaded"
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Meeting uploaded successfully",
+            data: meeting
+        });
+
+    } catch (error) {
+        console.error("Upload error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    } finally {
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+    }
 };
