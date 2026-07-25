@@ -1,6 +1,7 @@
 const fs = require('fs');
 const Meeting = require('../models/meeting.model');
 const cloudinary = require('../config/cloudinary');
+const groq = require('../config/groq');
 
 exports.uploadMeeting = async (req, res) => {
     try {
@@ -16,16 +17,22 @@ exports.uploadMeeting = async (req, res) => {
             folder: "minutemind"
         });
 
+        const transcription = await groq.audio.transcriptions.create({
+            file: fs.createReadStream(req.file.path),
+            model: "whisper-large-v3-turbo"
+        });
+
         const meeting = await Meeting.create({
             owner: req.user._id,
             audioUrl: result.secure_url,
             title: req.body.title || "Untitled Meeting",
-            status: "uploaded"
+            transcript: transcription.text,
+            status: "completed"
         });
 
         return res.status(201).json({
             success: true,
-            message: "Meeting uploaded successfully",
+            message: "Meeting uploaded and transcribed successfully",
             data: meeting
         });
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = require('express').Router();
 const proctect = require('../middleware/auth.midleware');
 const upload = require('../middleware/upload.middleware');
-const meetingController = require('../controllers/meeting.controller');
+const meetingController = require('../controllers/uploadmeeting.controller');
 
 
 router.post(
