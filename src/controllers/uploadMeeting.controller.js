@@ -22,11 +22,32 @@ exports.uploadMeeting = async (req, res) => {
             model: "whisper-large-v3-turbo"
         });
 
+        const summaryResponse = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            response_format : {
+                type: "json_object"
+            },
+            messages: [
+                {
+                    role: "system",
+                    content: "You summarize meeting transcripts. Always respond ONLY with valid JSON in this exact shape: { \"summary\": string, \"actionItems\": [{ \"task\": string, \"owner\": string or null }] }. Keep the summary to 3-5 sentences. Extract only concrete commitments as action items, not general discussion points"
+                },
+                {
+                    role: "user",
+                    content: transcription.text
+                }
+            ]
+        })
+
+        const {summary, actionItems}= JSON.parse(summaryResponse.choices[0].message.content);
+
         const meeting = await Meeting.create({
             owner: req.user._id,
             audioUrl: result.secure_url,
             title: req.body.title || "Untitled Meeting",
             transcript: transcription.text,
+            summary,
+            actionItems,
             status: "completed"
         });
 

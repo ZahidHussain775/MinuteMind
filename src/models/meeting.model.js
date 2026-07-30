@@ -34,12 +34,27 @@ const meetingSchema = new mongoose.Schema(
       default: "",
     },
 
+    actionItems: {
+      type: [
+        {
+        task: {
+          type: String, 
+          required: true
+        },
+        owner: {
+          type: String,
+          default : null
+        }
+      }],
+      default : []
+    },
+
     status: {
       type: String,
       enum: ["uploaded", "processing", "completed", "failed"],
       default: "uploaded",
     },
-  },
+  }, 
   {
     timestamps: true,
   }
